@@ -1,0 +1,13 @@
+services:
+  textreader-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: textreader-ai:latest
+    container_name: textreader_app
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - MODEL_PATH=/app/emnist_alphanumeric_cnn.keras
+    restart: unless-stopped

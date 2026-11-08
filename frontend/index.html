@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Scrawl — Neural Handwritten OCR & Intelligent Transcription</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Ambient Animated Background Glows -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="logo-icon scrawl-glow">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="logo-title-row">
+            <h1 class="logo-title">Scrawl<span class="brand-dot">.</span></h1>
+            <span class="version-tag">v2.0</span>
+          </div>
+          <p class="logo-subtitle">Neural Handwritten OCR & Intelligent Transcription</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Model Status Pill -->
+        <div id="backendStatus" class="status-pill status-checking">
+          <span class="status-dot"></span>
+          <span class="status-text">Connecting to model...</span>
+        </div>
+
+        <!-- Owner Profile & Controls Trigger -->
+        <button id="openOwnerModalBtn" class="owner-pill-btn" title="View Ownership & Model Controls">
+          <span class="owner-avatar">TP</span>
+          <span class="owner-name-short">Trigun P.</span>
+          <span class="owner-verified-check" title="Verified Project Owner">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+          </span>
+        </button>
+
+        <!-- API Documentation -->
+        <a href="/docs" target="_blank" class="api-docs-btn" title="Open Swagger API documentation">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"/>
+            <polyline points="8 6 2 12 8 18"/>
+          </svg>
+          API
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="main-content">
+    <!-- Top Mode Switcher -->
+    <div class="nav-wrapper">
+      <nav class="mode-tabs" role="tablist">
+        <button class="tab-btn active" id="tabNoteBtn" data-target="noteMode" role="tab" aria-selected="true">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          Note & Sequence OCR
+        </button>
+
+        <button class="tab-btn" id="tabCanvasBtn" data-target="canvasMode" role="tab" aria-selected="false">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
+          </svg>
+          Live Drawing Pad
+        </button>
+
+        <button class="tab-btn tab-owner-highlight" id="tabOwnerBtn" data-target="ownerSection">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          Owner Controls
+        </button>
+      </nav>
+    </div>
+
+    <!-- MODE 1: Note & Sequence Reader -->
+    <section id="noteMode" class="tab-view active">
+      <div class="view-grid">
+        <!-- Upload & Options Card -->
+        <div class="card clean-card animate-card">
+          <div class="card-header">
+            <div class="card-title-row">
+              <h2 class="card-title">Upload Handwritten Note</h2>
+              <span class="pill-badge pill-blue">AI Vision</span>
+            </div>
+            <p class="card-desc">Upload a photo, snapshot, or document scan of handwritten words or numbers.</p>
+          </div>
+
+          <!-- Dropzone -->
+          <div id="dropzone" class="dropzone">
+            <input type="file" id="noteFileInput" accept="image/png,image/jpeg,image/jpg,image/webp" class="file-input">
+            <div class="dropzone-content">
+              <div class="dropzone-icon pulse-soft">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </div>
+              <p class="dropzone-title">Click to upload or drag & drop</p>
+              <p class="dropzone-sub">Supports camera photos (PNG, JPG, JPEG, WebP)</p>
+            </div>
+          </div>
+
+          <!-- Image Preview -->
+          <div id="notePreviewContainer" class="preview-container hidden">
+            <div class="preview-box">
+              <img id="notePreviewImg" src="" alt="Uploaded note preview" class="preview-img">
+            </div>
+            <button id="clearNoteBtn" class="btn btn-secondary btn-sm clear-btn" title="Remove image">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              Remove Image
+            </button>
+          </div>
+
+          <!-- Recognition Mode Constraint Filter -->
+          <div class="mode-filter-section">
+            <div class="mode-label-row">
+              <span class="section-label">Recognition Mode:</span>
+              <span class="subtle-chip" id="activeModeLabel">Auto Context Active</span>
+            </div>
+            <div class="mode-pills" id="modePillsContainer">
+              <button type="button" class="mode-pill-btn active" data-mode="auto">
+                <span>🎯 Auto Context</span>
+              </button>
+              <button type="button" class="mode-pill-btn" data-mode="digits">
+                <span>🔢 Digits Only (0-9)</span>
+              </button>
+              <button type="button" class="mode-pill-btn" data-mode="letters">
+                <span>🔤 Letters Only (A-Z)</span>
+              </button>
+              <button type="button" class="mode-pill-btn" data-mode="alphanumeric">
+                <span>🔠 Mixed (0-9, A-Z)</span>
+              </button>
+            </div>
+            <p class="mode-hint" id="modeHintText">Smart Context: Auto-detects whether your text is numeric or words.</p>
+          </div>
+
+          <!-- Quick Test Samples -->
+          <div class="quick-samples">
+            <span class="section-label">Quick Test Samples:</span>
+            <div class="samples-buttons">
+              <button class="sample-pill-btn" data-sample="995461">Digits: "995461"</button>
+              <button class="sample-pill-btn" data-sample="HI BRO">Note: "HI BRO"</button>
+              <button class="sample-pill-btn" data-sample="HELLO">Note: "HELLO"</button>
+              <button class="sample-pill-btn" data-sample="CODE">Note: "CODE"</button>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <button id="processNoteBtn" class="btn btn-primary btn-full ripple-effect" disabled>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+              <span>Recognize Handwritten Note</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Transcription Results Card -->
+        <div class="card clean-card animate-card">
+          <div class="card-header">
+            <div class="card-title-row">
+              <h2 class="card-title">Transcription Results</h2>
+              <span class="pill-badge pill-green" id="resultStatusBadge">Engine Idle</span>
+            </div>
+            <p class="card-desc">Assembled text, confidence distribution, and visual character segmentation.</p>
+          </div>
+
+          <!-- Empty State -->
+          <div id="sequenceEmptyState" class="empty-state">
+            <div class="empty-icon float-soft">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="12" x2="12" y2="16"/>
+                <line x1="10" y1="14" x2="14" y2="14"/>
+              </svg>
+            </div>
+            <p class="empty-title">Ready for Handwriting Input</p>
+            <p class="empty-subtitle">Upload a photo or select a quick sample to transcribe handwritten characters.</p>
+          </div>
+
+          <!-- Loading State -->
+          <div id="sequenceLoading" class="loading-state hidden">
+            <div class="loading-visual">
+              <div class="spinner-ring"></div>
+              <div class="pulse-core"></div>
+            </div>
+            <p class="loading-title">Extracting & Segmenting Note...</p>
+            <p class="loading-subtitle">Applying morphological division, contour analysis & personalized CNN</p>
+          </div>
+
+          <!-- Populated Results -->
+          <div id="sequenceResults" class="results-container hidden">
+            <!-- Text Box -->
+            <div class="transcription-box highlight-sheen">
+              <div class="transcription-header">
+                <div class="label-with-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="4 7 4 4 20 4 20 7"/>
+                    <line x1="9" y1="20" x2="15" y2="20"/>
+                    <line x1="12" y1="4" x2="12" y2="20"/>
+                  </svg>
+                  <span class="transcription-label">Recognized Output</span>
+                </div>
+                <div class="action-buttons">
+                  <button id="copyTextBtn" class="btn-icon tooltip-anchor" title="Copy text to clipboard">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                  <button id="downloadTextBtn" class="btn-icon tooltip-anchor" title="Download transcribed text">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <textarea id="recognizedOutputText" class="transcription-textarea" rows="2" readonly></textarea>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="stats-row">
+              <div class="stat-pill">
+                <span class="stat-num counter-anim" id="statTotalChars">0</span>
+                <span class="stat-name">Characters Detected</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num counter-anim" id="statAvgConfidence">0%</span>
+                <span class="stat-name">Average Confidence</span>
+              </div>
+            </div>
+
+            <!-- Character Pills Grid -->
+            <div class="characters-breakdown">
+              <h3 class="breakdown-title">Character Confidence Breakdown:</h3>
+              <div id="charPillsGrid" class="char-pills-grid"></div>
+            </div>
+
+            <!-- Bounding Box Image Preview -->
+            <div class="annotated-preview-wrapper">
+              <div class="annotated-title-row">
+                <h3 class="breakdown-title">Segmentation & Bounding Box Overlay:</h3>
+                <span class="subtle-badge">OpenCV Document ROI</span>
+              </div>
+              <div class="annotated-img-frame">
+                <img id="annotatedImage" src="" alt="Segmented bounding boxes" class="annotated-img">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODE 2: Interactive Drawing Pad -->
+    <section id="canvasMode" class="tab-view hidden">
+      <div class="view-grid">
+        <!-- Canvas Pad -->
+        <div class="card clean-card animate-card">
+          <div class="card-header">
+            <div class="card-title-row">
+              <h2 class="card-title">Live Drawing & Character Pad</h2>
+              <span class="pill-badge pill-purple">Live Pad</span>
+            </div>
+            <p class="card-desc">Write any letter, digit, or handwritten word (e.g. "Hi", "A", "42", "AI") in real time.</p>
+          </div>
+
+          <div class="canvas-wrapper">
+            <canvas id="drawingCanvas" width="280" height="280"></canvas>
+            <div class="canvas-hint">Draw single letters or words inside the canvas</div>
+          </div>
+
+          <div class="canvas-toolbar">
+            <div class="toolbar-group">
+              <label for="penSizeSlider" class="toolbar-label">Pen Stroke:</label>
+              <input type="range" id="penSizeSlider" min="12" max="32" value="20" class="range-slider">
+              <span id="penSizeDisplay" class="range-val">20px</span>
+            </div>
+
+            <div class="toolbar-buttons">
+              <button id="clearCanvasBtn" class="btn btn-secondary btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                </svg>
+                Clear Pad
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Test Suggestions -->
+          <div class="quick-samples" style="margin-top: 6px; margin-bottom: 12px;">
+            <span class="samples-title" style="font-size: 0.76rem; color: var(--text-muted); font-weight: 600;">DRAWING EXAMPLES:</span>
+            <div class="samples-buttons">
+              <button type="button" class="sample-pill-btn canvas-quick-btn" data-text="Hi">Word: "Hi"</button>
+              <button type="button" class="sample-pill-btn canvas-quick-btn" data-text="AI">Word: "AI"</button>
+              <button type="button" class="sample-pill-btn canvas-quick-btn" data-text="A">Letter: "A"</button>
+              <button type="button" class="sample-pill-btn canvas-quick-btn" data-text="42">Number: "42"</button>
+            </div>
+          </div>
+
+          <div class="card-footer" style="margin-top: 8px;">
+            <button id="predictCanvasBtn" class="btn btn-primary btn-full ripple-effect">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              <span>Recognize Drawing</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Canvas Predictions Card -->
+        <div class="card clean-card animate-card">
+          <div class="card-header">
+            <div class="card-title-row">
+              <h2 class="card-title">Recognition Results</h2>
+              <span class="pill-badge pill-indigo">Scrawl Engine</span>
+            </div>
+            <p class="card-desc">Deep CNN prediction with multi-character segmentation & confidence breakdown.</p>
+          </div>
+
+          <!-- Empty State -->
+          <div id="canvasEmptyState" class="empty-state">
+            <div class="empty-icon float-soft">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
+            <p class="empty-title">Canvas Ready</p>
+            <p class="empty-subtitle">Draw text, characters, or numbers on the pad and click Recognize to see the model predict.</p>
+          </div>
+
+          <!-- Results -->
+          <div id="canvasResults" class="results-container hidden">
+            <div class="hero-character-box highlight-sheen">
+              <span class="hero-label">Recognized Drawing</span>
+              <div id="heroCharacter" class="hero-character scale-pop">A</div>
+              <div class="hero-confidence">
+                <span id="heroConfidence">99.8%</span> confidence
+              </div>
+            </div>
+
+            <!-- Multi-character confidence breakdown -->
+            <div id="canvasCharBreakdown" class="characters-breakdown hidden" style="margin-top: 14px;">
+              <h3 class="breakdown-title">Character Confidence Breakdown:</h3>
+              <div id="canvasCharPills" class="char-pills-grid"></div>
+            </div>
+
+            <!-- Single-character top candidate distribution -->
+            <div id="canvasCandidatesContainer" class="probability-distribution" style="margin-top: 14px;">
+              <h3 class="breakdown-title">Top Candidates:</h3>
+              <div id="candidatesList" class="candidates-list"></div>
+            </div>
+
+            <!-- Live Segmentation Bounding Box Preview -->
+            <div id="canvasAnnotatedWrapper" class="annotated-preview-wrapper hidden" style="margin-top: 14px;">
+              <div class="annotated-title-row">
+                <h3 class="breakdown-title">Segmentation & Character Boxes:</h3>
+                <span class="subtle-badge">Live Segmentation</span>
+              </div>
+              <div class="annotated-img-frame">
+                <img id="canvasAnnotatedImage" src="" alt="Canvas segmentation" class="annotated-img" style="max-height: 180px;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODE 3: Ownership Controls & Developer Profile -->
+    <section id="ownerSection" class="tab-view hidden">
+      <div class="owner-panel-container animate-card">
+        <div class="owner-panel-header">
+          <div class="owner-avatar-large">TP</div>
+          <div class="owner-header-info">
+            <div class="owner-name-row">
+              <h2 class="owner-full-name">Trigun Parvathapuram</h2>
+              <span class="verified-pill">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                Project Owner & Model Architect
+              </span>
+            </div>
+            <p class="owner-bio">Lead Developer • CodeAlpha Machine Learning Track • Task 3: Handwritten Character Recognition</p>
+          </div>
+        </div>
+
+        <div class="owner-grid">
+          <!-- Control 1: Model Personalization Status -->
+          <div class="owner-card">
+            <div class="owner-card-title-row">
+              <div class="owner-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <h3 class="owner-card-title">Handwriting Personalization</h3>
+              <span class="toggle-status active" id="personalizationStatusText">Active</span>
+            </div>
+            <p class="owner-card-desc">The CNN model has been fine-tuned directly on Trigun Parvathapuram's personal handwriting sample sheet (A–Z, a–z, 0–9).</p>
+            <div class="owner-metric-box">
+              <div class="metric-item">
+                <span class="metric-label">Validation Accuracy</span>
+                <span class="metric-val text-success">96.32%</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">User Augmented Samples</span>
+                <span class="metric-val">5,332</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-label">Classes Covered</span>
+                <span class="metric-val">36 (0–9, A–Z)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Control 2: Ownership Controls & Signature Watermarking -->
+          <div class="owner-card">
+            <div class="owner-card-title-row">
+              <div class="owner-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+              </div>
+              <h3 class="owner-card-title">Ownership Attribution</h3>
+            </div>
+            <p class="owner-card-desc">Configure ownership controls and watermark export options.</p>
+
+            <div class="owner-toggles-list">
+              <label class="toggle-row">
+                <div class="toggle-info">
+                  <span class="toggle-name">Signature Watermark on Exports</span>
+                  <span class="toggle-sub">Appends "Transcribed with Scrawl by Trigun Parvathapuram"</span>
+                </div>
+                <input type="checkbox" id="toggleWatermark" class="custom-toggle" checked>
+              </label>
+
+              <label class="toggle-row">
+                <div class="toggle-info">
+                  <span class="toggle-name">Owner Signature Card</span>
+                  <span class="toggle-sub">Display Trigun's verified badge on results</span>
+                </div>
+                <input type="checkbox" id="toggleOwnerBadge" class="custom-toggle" checked>
+              </label>
+
+              <label class="toggle-row">
+                <div class="toggle-info">
+                  <span class="toggle-name">Morphological Illumination Flattening</span>
+                  <span class="toggle-sub">Normalizes shadows and paper background variations</span>
+                </div>
+                <input type="checkbox" id="toggleMorph" class="custom-toggle" checked disabled>
+              </label>
+            </div>
+          </div>
+
+          <!-- Control 3: System Architecture -->
+          <div class="owner-card owner-card-wide">
+            <div class="owner-card-title-row">
+              <div class="owner-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+              </div>
+              <h3 class="owner-card-title">Technical Pipeline Architecture</h3>
+            </div>
+            <div class="pipeline-flow">
+              <div class="pipeline-step">
+                <span class="step-num">1</span>
+                <span class="step-title">Document ROI</span>
+                <span class="step-sub">Paper contour isolation</span>
+              </div>
+              <div class="pipeline-arrow">→</div>
+              <div class="pipeline-step">
+                <span class="step-num">2</span>
+                <span class="step-title">Morphological Division</span>
+                <span class="step-sub">Illumination flattening</span>
+              </div>
+              <div class="pipeline-arrow">→</div>
+              <div class="pipeline-step">
+                <span class="step-num">3</span>
+                <span class="step-title">Stroke Clustering</span>
+                <span class="step-sub">Line & word segmentation</span>
+              </div>
+              <div class="pipeline-arrow">→</div>
+              <div class="pipeline-step">
+                <span class="step-num">4</span>
+                <span class="step-title">Trigun Fine-Tuned CNN</span>
+                <span class="step-sub">36-Class inference (96.3%)</span>
+              </div>
+              <div class="pipeline-arrow">→</div>
+              <div class="pipeline-step">
+                <span class="step-num">5</span>
+                <span class="step-title">Context Disambiguation</span>
+                <span class="step-sub">Numeric vs word filtering</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Ownership Modal (accessible from header button) -->
+  <div id="ownerModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <button id="closeOwnerModalBtn" class="modal-close-btn" title="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="modal-header">
+        <div class="owner-avatar-modal">TP</div>
+        <div class="modal-title-wrap">
+          <h3 class="modal-title">Trigun Parvathapuram</h3>
+          <p class="modal-subtitle">Project Owner & Machine Learning Engineer</p>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-info-row">
+          <span class="info-tag">Project</span>
+          <span class="info-val"><strong>Scrawl</strong> — Neural Handwriting OCR</span>
+        </div>
+        <div class="modal-info-row">
+          <span class="info-tag">Track</span>
+          <span class="info-val">CodeAlpha ML Internship — Task 3</span>
+        </div>
+        <div class="modal-info-row">
+          <span class="info-tag">Model</span>
+          <span class="info-val">Personalized CNN Fine-Tuned on Trigun's Handwriting</span>
+        </div>
+        <div class="modal-info-row">
+          <span class="info-tag">Model Accuracy</span>
+          <span class="info-val text-success font-bold">96.32% Validation Accuracy</span>
+        </div>
+        <div class="modal-info-row">
+          <span class="info-tag">Verified ID</span>
+          <span class="info-val font-mono">SCRAWL-OWNER-TP-2026-OK</span>
+        </div>
+
+        <div class="modal-action-bar">
+          <button id="modalSwitchToOwnerTabBtn" class="btn btn-primary btn-full">
+            Open Advanced Owner Controls
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="brand-footer">Scrawl<span class="brand-dot">.</span></span>
+        <span class="footer-sep">•</span>
+        <span>Engineered by <strong>Trigun Parvathapuram</strong></span>
+      </div>
+      <div class="footer-right">
+        <span class="owner-verified-pill" title="Verified Creator & Model Architect">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Owner: Trigun Parvathapuram
+        </span>
+        <span class="copyright-text">© 2026 Trigun Parvathapuram. All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

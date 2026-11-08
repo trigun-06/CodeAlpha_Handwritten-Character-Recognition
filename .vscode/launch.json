@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "🚀 Run Scrawl App (app.py)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/app.py",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "🚀 Run Scrawl Standalone (textreader_standalone.py)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/textreader_standalone.py",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
+}
